@@ -1,8 +1,27 @@
 <?php
 
-define('DS', DIRECTORY_SEPARATOR);
+/**
+ * 持久连接
+ * 
+ * 启用该选项会极大提升访问速度
+ * 需服务器支持
+ */
 define('USE_PRESISTENT_CONNECTION', true);
+
+/**
+ * 系统保护
+ * 
+ * 只允许连接到localhost
+ * 不允许使用root用户
+ */
 define('SYSTEM_PROTECT', true);
+
+/**
+ * 审计日志
+ * 
+ * 日志将保存在 logs 目录下
+ * 并以日期/用户名做分类
+ */
 define('AUDIT_LOG', true);
 
 header("Content-Type: text/plain; charset=x-user-defined");
@@ -187,7 +206,7 @@ if (AUDIT_LOG) {
     $remote_ip = $_SERVER['HTTP_X_REAL_IP'] ?? $_SERVER['REMOTE_ADDR'];
     $remote_port = $_SERVER['REMOTE_PORT'];
 
-    $audit_log_dir = __DIR__ . DS . 'logs' . DS . date('Ym') . DS;
+    $audit_log_dir = __DIR__ . DIRECTORY_SEPARATOR . 'logs' . DIRECTORY_SEPARATOR . date('Ym') . DIRECTORY_SEPARATOR;
     $audit_log_file = $audit_log_dir  . date('d') . ' - ' . $username . '.log';
     $audit_time = date('Y-m-d H:i:s');
 
@@ -196,10 +215,13 @@ if (AUDIT_LOG) {
     }
 
     if ($action === "Q") {
-        $queryCount = count($query);
-        $log = "{$audit_time} {$username}@{$remote_ip}:{$remote_port} - {$queryCount} querys:" . PHP_EOL;
+        $log = "{$audit_time} {$username}@{$remote_ip}:{$remote_port}" . PHP_EOL;
 
         foreach ($query as $each) {
+			if ($each === "SET NAMES 'utf8mb4'") {
+				continue;
+			}
+			
             $log .=  "  {$each}" . PHP_EOL;
         }
 
